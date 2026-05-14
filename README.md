@@ -1,4 +1,4 @@
-# sql
+# xsql
 
 Go library with SQL related solutions.
 
@@ -14,7 +14,7 @@ package quick_start
 import (
     "embed"
 
-    "github.com/Deimvis-go/sql/sqlfw"
+    "github.com/Deimvis-go/xsql/sqlfw"
 )
 
 //go:embed queries

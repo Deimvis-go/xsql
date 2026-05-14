@@ -1,4 +1,4 @@
-module github.com/Deimvis-go/sql
+module github.com/Deimvis-go/xsql
 
 go 1.21
 
