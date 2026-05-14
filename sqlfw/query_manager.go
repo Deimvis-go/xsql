@@ -1,5 +1,6 @@
 package sqlfw
 
+
 type QueryManager[T any] interface {
 	IConstQueryManager[T]
 	Queries() *T

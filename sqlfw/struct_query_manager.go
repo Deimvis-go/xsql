@@ -4,6 +4,11 @@ import (
 	"fmt"
 	"reflect"
 	"unsafe"
+
+	"github.com/Deimvis/go-ext/go1.25/xcheck/xshould"
+	"github.com/Deimvis/go-ext/go1.25/xembed"
+	"github.com/Deimvis/go-ext/go1.25/xmaps"
+	"github.com/Deimvis/go-ext/go1.25/xoptional"
 )
 
 func NewStructQueryManager[T any]() *StructQueryManager[T] {
@@ -49,7 +54,7 @@ type FsReadStats struct {
 type FsReadOption func(*fsReadCfg)
 
 // TODO: support subdirectories and recursive walk
-func (qm *StructQueryManager[T]) ReadFromFS(fs Fs, basePath string, opts ...FsReadOption) (FsReadStats, error) {
+func (qm *StructQueryManager[T]) ReadFromFS(fs xembed.Fs, basePath string, opts ...FsReadOption) (FsReadStats, error) {
 	cfg := defaultFsReadCfg
 	for _, opt := range opts {
 		opt(&cfg)
@@ -58,7 +63,7 @@ func (qm *StructQueryManager[T]) ReadFromFS(fs Fs, basePath string, opts ...FsRe
 		qm.ptr2meta = make(map[any]QueryMeta)
 	}
 
-	rfs := NewRelativeFs(fs)
+	rfs := xembed.NewRelativeFs(fs)
 	rfs.Cd("/")
 	rfs.Cd(basePath)
 	var stats FsReadStats
@@ -82,7 +87,7 @@ func (qm *StructQueryManager[T]) ReadFromFS(fs Fs, basePath string, opts ...FsRe
 			continue
 		}
 		tag := ParseTag(vt.Field(i).Tag.Get("sql"))
-		if len(tag.kv) == 0 || hasKey(tag.kv, "-") {
+		if len(tag.kv) == 0 || xmaps.HasKey(tag.kv, "-") {
 			// skip some extra fields, not relevant to query manager
 			continue
 		}
@@ -115,7 +120,7 @@ func (qm *StructQueryManager[T]) ReadFromFS(fs Fs, basePath string, opts ...FsRe
 				fmeta.name.SetValue(name)
 			}
 
-			meta := queryMeta{name: optionalValueOr(fmeta.name, "")}
+			meta := queryMeta{name: xoptional.ValueOr(fmeta.name, "")}
 			if isStr {
 				f.SetString(string(content))
 			} else if isBytes {
@@ -128,7 +133,7 @@ func (qm *StructQueryManager[T]) ReadFromFS(fs Fs, basePath string, opts ...FsRe
 				f.Set(reflect.ValueOf(q))
 			}
 			qm.ptr2meta[f.Addr().UnsafePointer()] = meta
-		} else if kind == reflect.Struct && hasKey(tag.kv, "cd") {
+		} else if kind == reflect.Struct && xmaps.HasKey(tag.kv, "cd") {
 			rfs.Cd(tag.kv["cd"])
 			defer rfs.Cd("..")
 			// TODO: support recursive (add interface with readFromFs method (lowercase), check impl and call)
@@ -138,8 +143,9 @@ func (qm *StructQueryManager[T]) ReadFromFS(fs Fs, basePath string, opts ...FsRe
 	}
 
 	if cfg.requireAllQueriesFound {
-		if stats.ReadQueryCount != stats.TotalQueryCount {
-			return stats, fmt.Errorf("some queries not found: read %d/%d", stats.ReadQueryCount, stats.TotalQueryCount)
+		err := xshould.Eq(stats.ReadQueryCount, stats.TotalQueryCount, "some queries not found")
+		if err != nil {
+			return stats, err
 		}
 	}
 
@@ -179,8 +185,3 @@ var (
 
 	queryType = reflect.TypeOf(Query{})
 )
-
-func hasKey[K comparable, V any](m map[K]V, k K) bool {
-	_, ok := m[k]
-	return ok
-}

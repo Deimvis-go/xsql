@@ -4,6 +4,8 @@ import (
 	"errors"
 	"path/filepath"
 	"strings"
+
+	"github.com/Deimvis/go-ext/go1.25/xstrings/xstringscase"
 )
 
 type QueryPathResolver func(QueryFieldMeta) (string, error)
@@ -18,7 +20,7 @@ var (
 		return "", errors.New("no 'path' key in tag")
 	}
 	QueryPathFromFieldName QueryPathResolver = func(m QueryFieldMeta) (string, error) {
-		return toSnake(m.FieldName()) + ".sql", nil
+		return xstringscase.ToSnake(m.FieldName()) + ".sql", nil
 	}
 )
 
@@ -31,7 +33,7 @@ var (
 		return "", errors.New("no 'name' key in tag")
 	}
 	QueryNameFromFieldName QueryNameResolver = func(m QueryFieldMeta) (string, error) {
-		return toSnake(m.FieldName()), nil
+		return xstringscase.ToSnake(m.FieldName()), nil
 	}
 	QueryNameFromFileBasename QueryNameResolver = func(m QueryFieldMeta) (string, error) {
 		path, ok := m.Path()
@@ -40,6 +42,6 @@ var (
 		}
 		filename := filepath.Base(path)
 		filebasename := strings.TrimSuffix(filename, filepath.Ext(filename))
-		return toSnake(filebasename), nil
+		return xstringscase.ToSnake(filebasename), nil
 	}
 )

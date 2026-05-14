@@ -1,5 +1,7 @@
 package sqlfw
 
+import "github.com/Deimvis/go-ext/go1.25/xoptional"
+
 type QueryMeta interface {
 	// Name will return empty string "" if query name is unknown.
 	Name() string
@@ -32,8 +34,8 @@ func (qm queryMeta) Name() string {
 }
 
 type queryFieldMeta struct {
-	name      optional[string]
-	path      optional[string]
+	name      xoptional.T[string]
+	path      xoptional.T[string]
 	fieldName string
 	fieldTag  parsedTag
 }

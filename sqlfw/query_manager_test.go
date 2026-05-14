@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/Deimvis/go-ext/go1.25/xembed"
 )
 
 //go:embed test_data
@@ -19,7 +20,7 @@ func TestReadFromFs(t *testing.T) {
 	type expQueries = map[string]string // field name -> field value
 	type expMeta = map[string]QueryMeta // field name -> meta
 	type QM interface {
-		ReadFromFS(fs Fs, basePath string, opts ...FsReadOption) (FsReadStats, error)
+		ReadFromFS(fs xembed.Fs, basePath string, opts ...FsReadOption) (FsReadStats, error)
 	}
 	tcs := []struct {
 		title      string
